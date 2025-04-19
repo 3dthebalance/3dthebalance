@@ -1,7 +1,6 @@
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template
 import trimesh
 import os
-import csv
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
