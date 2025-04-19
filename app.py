@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file
 import trimesh
 import os
 import csv
@@ -21,19 +21,20 @@ def upload_file():
     file.save(filepath)
 
     mesh = trimesh.load_mesh(filepath)
-    volume_cm3 = abs(mesh.volume / 1000)
+    volume_cm3 = abs(mesh.volume / 1000)  # mm³ → cm³
 
     material_prices = {
-        'PLA': 300,
-        'ABS': 400,
-        'TPU': 400,
-        'PETG': 350,
+        'PLA': 350,
+        'ABS': 450,
+        'TPU': 600,
+        'PETG': 450,
         '강화레진': 1000,
         '투명레진': 1300
     }
 
     price_per_cm3 = material_prices.get(material, 200)
-    estimate = int(volume_cm3 * price_per_cm3)
+    raw_estimate = volume_cm3 * price_per_cm3
+    estimate = int(round(raw_estimate, -3))  # ✅ 1000원 단위로 반올림
 
     return jsonify({
         "estimate": estimate,
@@ -56,6 +57,10 @@ def submit_order():
         writer.writerow([name, phone, address, estimate])
 
     return f"<h2>주문이 완료되었습니다! 감사합니다 :)</h2><p>{name} / {phone} / {address} / {estimate}원</p>"
+
+@app.route('/orders')
+def view_orders():
+    return send_file('orders.csv', as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
