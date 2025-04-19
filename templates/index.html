@@ -106,7 +106,8 @@
       formData.append("printer", printer);
       formData.append("material", material);
 
-      const response = await fetch("http://127.0.0.1:5000/upload", {
+      // ✅ 로컬 주소가 아니라 상대 경로로 바꿨음!
+      const response = await fetch("/upload", {
         method: "POST",
         body: formData
       });
@@ -118,3 +119,4 @@
   </script>
 </body>
 </html>
+
