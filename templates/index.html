@@ -79,6 +79,12 @@
     #order-btn button:hover {
       background-color: #45a049;
     }
+    #loading {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -111,6 +117,8 @@
       <button type="submit">견적 계산하기</button>
     </form>
 
+    <div id="loading">⏳ 견적 계산 중입니다...</div>
+
     <table id="result-table" style="display: none;">
       <thead>
         <tr>
@@ -138,6 +146,7 @@
     const totalDiv = document.getElementById("total");
     const orderBtn = document.getElementById("order-btn");
     const orderLink = document.getElementById("order-link");
+    const loading = document.getElementById("loading");
 
     const materials = {
       FDM: ["PLA", "ABS", "TPU", "PETG"],
@@ -157,6 +166,10 @@
 
     document.getElementById("upload-form").addEventListener("submit", async function(e) {
       e.preventDefault();
+
+      // 🔥 로딩 표시
+      loading.style.display = "block";
+
       const files = document.getElementById("stl-file").files;
       const printer = printerSelect.value;
       const material = materialSelect.value;
@@ -174,6 +187,10 @@
       });
 
       const result = await response.json();
+
+      // 🔥 로딩 숨기기
+      loading.style.display = "none";
+
       tbody.innerHTML = "";
       result.estimates.forEach(est => {
         const row = `<tr><td>${est.filename}</td><td>${est.volume}</td><td>${est.estimate.toLocaleString()}</td></tr>`;
@@ -182,10 +199,10 @@
       resultTable.style.display = "table";
       totalDiv.innerText = `총 합계: ${result.total.toLocaleString()}원`;
 
-      // 주문하기 버튼 설정
       orderLink.href = `/order?estimate=${result.total}`;
       orderBtn.style.display = "block";
     });
   </script>
 </body>
 </html>
+
