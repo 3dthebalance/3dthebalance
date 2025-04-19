@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 import os
 import datetime
+import json
 import trimesh
 
 import gspread
@@ -18,13 +19,16 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets"
 ]
-SERVICE_ACCOUNT_FILE = "service_account.json"
-SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
-DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
-creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+# 환경변수에서 service_account 정보 불러오기
+SERVICE_ACCOUNT_INFO = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+
 drive_service = build('drive', 'v3', credentials=creds)
 sheet_service = build('sheets', 'v4', credentials=creds)
+
+SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
+DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
 material_prices = {
     'PLA': 400,
@@ -84,8 +88,6 @@ def order():
     estimate = request.args.get('estimate', '0')
     return render_template('order.html', estimate=estimate)
 
-# Google Drive 업로드 + 링크 생성
-
 def upload_file_to_drive(file_path, filename):
     file_metadata = {
         'name': filename,
@@ -104,8 +106,6 @@ def upload_file_to_drive(file_path, filename):
     ).execute()
 
     return f"https://drive.google.com/file/d/{uploaded_file['id']}/view?usp=sharing"
-
-# Google Sheet 기록
 
 def record_order_to_sheet(name, phone, address, estimate, channel, file_links):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -145,4 +145,3 @@ def submit_order():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
