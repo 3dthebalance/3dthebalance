@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D 프린트 견적 계산기</title>
   <style>
     body {
@@ -18,6 +18,7 @@
     h1 {
       text-align: center;
       color: #ff9800;
+      margin-top: 10px;
     }
     label {
       font-weight: bold;
@@ -64,12 +65,25 @@
       margin-bottom: 20px;
       display: block;
     }
+    #order-btn {
+      text-align: center;
+      margin-top: 30px;
+      display: none;
+    }
+    #order-btn button {
+      background-color: #4caf50;
+      font-size: 1rem;
+      padding: 12px 20px;
+      border-radius: 6px;
+    }
+    #order-btn button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-
-    <!-- 이미지 삽입 -->
+    <!-- 상단 이미지 -->
     <img src="/static/printing.png" alt="3D 프린팅 사진" class="header-image" />
 
     <h1>3D 프린트 견적 계산기</h1>
@@ -109,6 +123,11 @@
     </table>
 
     <div id="total"></div>
+
+    <!-- 주문하기 버튼 -->
+    <div id="order-btn">
+      <a id="order-link"><button type="button">주문하기</button></a>
+    </div>
   </div>
 
   <script>
@@ -117,6 +136,8 @@
     const resultTable = document.getElementById("result-table");
     const tbody = resultTable.querySelector("tbody");
     const totalDiv = document.getElementById("total");
+    const orderBtn = document.getElementById("order-btn");
+    const orderLink = document.getElementById("order-link");
 
     const materials = {
       FDM: ["PLA", "ABS", "TPU", "PETG"],
@@ -160,9 +181,11 @@
       });
       resultTable.style.display = "table";
       totalDiv.innerText = `총 합계: ${result.total.toLocaleString()}원`;
+
+      // 주문하기 버튼 설정
+      orderLink.href = `/order?estimate=${result.total}`;
+      orderBtn.style.display = "block";
     });
   </script>
 </body>
 </html>
-
-
