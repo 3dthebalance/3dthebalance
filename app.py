@@ -1,17 +1,16 @@
 from flask import Flask, request, jsonify, render_template
 import trimesh
 import os
+import csv
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ✅ 홈페이지 접속 시 index.html 보여주기
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# ✅ 견적 계산 처리
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
@@ -22,7 +21,7 @@ def upload_file():
     file.save(filepath)
 
     mesh = trimesh.load_mesh(filepath)
-    volume_cm3 = abs(mesh.volume / 1000)  # mm³ → cm³ (음수 방지)
+    volume_cm3 = abs(mesh.volume / 1000)
 
     material_prices = {
         'PLA': 300,
@@ -41,6 +40,23 @@ def upload_file():
         "volume": round(volume_cm3, 1)
     })
 
-# ✅ 로컬 실행용 (Render에선 무시됨)
+@app.route('/order', methods=['GET'])
+def show_order():
+    return render_template('order.html')
+
+@app.route('/order', methods=['POST'])
+def submit_order():
+    name = request.form['name']
+    phone = request.form['phone']
+    address = request.form['address']
+    estimate = request.form['estimate']
+
+    with open('orders.csv', mode='a', newline='', encoding='utf-8-sig') as f:
+        writer = csv.writer(f)
+        writer.writerow([name, phone, address, estimate])
+
+    return f"<h2>주문이 완료되었습니다! 감사합니다 :)</h2><p>{name} / {phone} / {address} / {estimate}원</p>"
+
 if __name__ == '__main__':
     app.run(debug=True)
+
