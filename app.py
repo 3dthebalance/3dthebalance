@@ -17,19 +17,25 @@ def upload_file():
     printer_type = request.form['printer']
     material = request.form['material']
 
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+    filename = file.filename.lower()
+    if not (filename.endswith('.stl') or filename.endswith('.obj')):
+        return jsonify({
+            "error": "지원하지 않는 파일 형식입니다. STL 또는 OBJ 파일을 업로드해주세요."
+        }), 400
+
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
 
     mesh = trimesh.load_mesh(filepath)
     volume_cm3 = abs(mesh.volume / 1000)  # mm³ → cm³
 
     material_prices = {
-        'PLA': 300,
-        'ABS': 400,
-        'TPU': 400,
-        'PETG': 350,
-        '강화레진': 1000,
-        '투명레진': 1300
+        'PLA': 400,
+        'ABS': 500,
+        'TPU': 700,
+        'PETG': 500,
+        '강화레진': 2000,
+        '투명레진': 2500
     }
 
     price_per_cm3 = material_prices.get(material, 200)
@@ -75,6 +81,10 @@ def submit_order():
 @app.route('/orders')
 def view_orders():
     return send_file('orders.csv', as_attachment=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
