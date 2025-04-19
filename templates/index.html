@@ -57,10 +57,20 @@
     #order-btn {
       text-align: center;
     }
+    img.header-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+
+    <!-- ✅ 이미지 삽입 -->
+    <img src="/static/printing.png" alt="3D 프린팅 사진" class="header-image" />
+
     <h1>3D 프린트 견적 계산기</h1>
 
     <form id="upload-form" enctype="multipart/form-data">
@@ -148,9 +158,6 @@
       orderBtn.style.display = 'block';
     });
   </script>
-</body>
-</html>
-
 </body>
 </html>
 
