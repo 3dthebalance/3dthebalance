@@ -2,82 +2,112 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>주문하기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주문 정보 입력</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 30px; background-color: #f0f8ff; }
-    h1 { color: #2196f3; }
-    label, input, select, button {
-      display: block; margin-bottom: 15px;
-      font-size: 16px; max-width: 400px; width: 100%;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff8e1;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #ff9800;
+      text-align: center;
+      font-size: 1.6rem;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
     }
     button {
-      padding: 10px;
-      background-color: #2196f3;
+      width: 100%;
+      background-color: #ffb300;
       color: white;
+      padding: 14px;
+      margin-top: 25px;
       border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
       cursor: pointer;
     }
     button:hover {
-      background-color: #1976d2;
+      background-color: #ffa000;
     }
-    #custom-source-box {
-      display: none;
+    .estimate-box {
+      background-color: #fff3cd;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1rem;
     }
   </style>
 </head>
 <body>
-  <h1>최종 주문서</h1>
+  <div class="container">
+    <h1>주문 정보 입력</h1>
 
-  <form method="POST" action="/order">
-    <input type="hidden" name="estimate" id="estimate-input" />
-
-    <label>견적 금액:</label>
-    <div id="estimate-display"></div>
-
-    <label>이름:</label>
-    <input type="text" name="name" required />
-
-    <label>연락처:</label>
-    <input type="text" name="phone" required />
-
-    <label>주소:</label>
-    <input type="text" name="address" required />
-
-    <label>주문 경로:</label>
-    <select name="source" id="source-select" required>
-      <option value="">선택하세요</option>
-      <option value="크몽">크몽</option>
-      <option value="숨고">숨고</option>
-      <option value="홈페이지">홈페이지</option>
-      <option value="기타">기타</option>
-    </select>
-
-    <div id="custom-source-box">
-      <label>기타 경로를 입력해주세요:</label>
-      <input type="text" name="custom_source" />
+    <div class="estimate-box">
+      총 견적 금액: <span id="estimate-amount">{{ estimate }}</span> 원
     </div>
 
-    <button type="submit">최종 주문하기</button>
-  </form>
+    <form method="POST" action="/submit-order">
+      <label>이름</label>
+      <input type="text" name="name" required />
+
+      <label>연락처</label>
+      <input type="tel" name="phone" required />
+
+      <label>주소</label>
+      <textarea name="address" rows="3" required></textarea>
+
+      <label>주문 경로</label>
+      <select name="channel" id="channel" required>
+        <option value="크몽">크몽</option>
+        <option value="숨고">숨고</option>
+        <option value="홈페이지">홈페이지</option>
+        <option value="기타">기타</option>
+      </select>
+
+      <div id="etc-box" style="display: none;">
+        <label>기타 주문 경로</label>
+        <input type="text" name="channel_detail" />
+      </div>
+
+      <input type="hidden" name="estimate" value="{{ estimate }}" />
+      <button type="submit">주문하기</button>
+    </form>
+  </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const estimate = params.get("estimate");
+    const channelSelect = document.getElementById("channel");
+    const etcBox = document.getElementById("etc-box");
 
-    document.getElementById("estimate-input").value = estimate;
-    document.getElementById("estimate-display").innerText = estimate + "원";
-
-    const sourceSelect = document.getElementById("source-select");
-    const customBox = document.getElementById("custom-source-box");
-
-    sourceSelect.addEventListener('change', function () {
-      if (this.value === "기타") {
-        customBox.style.display = 'block';
+    channelSelect.addEventListener("change", () => {
+      if (channelSelect.value === "기타") {
+        etcBox.style.display = "block";
       } else {
-        customBox.style.display = 'none';
+        etcBox.style.display = "none";
       }
     });
   </script>
 </body>
 </html>
-
