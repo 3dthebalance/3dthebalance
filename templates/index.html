@@ -58,10 +58,20 @@
       text-align: center;
       margin-top: 20px;
     }
+    .header-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+
+    <!-- 이미지 삽입 -->
+    <img src="/static/printing.png" alt="3D 프린팅 사진" class="header-image" />
+
     <h1>3D 프린트 견적 계산기</h1>
 
     <form id="upload-form" enctype="multipart/form-data">
@@ -77,9 +87,11 @@
         <option value="ABS">ABS</option>
         <option value="TPU">TPU</option>
         <option value="PETG">PETG</option>
+        <option value="강화레진">강화레진</option>
+        <option value="투명레진">투명레진</option>
       </select>
 
-      <label>3D 파일 선택 (STL, OBJ)</label>
+      <label>3D 파일 선택 (STL, OBJ):</label>
       <input type="file" id="stl-file" accept=".stl,.obj" multiple required />
 
       <button type="submit">견적 계산하기</button>
@@ -152,4 +164,5 @@
   </script>
 </body>
 </html>
+
 
