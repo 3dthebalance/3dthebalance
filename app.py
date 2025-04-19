@@ -24,17 +24,17 @@ def upload_file():
     volume_cm3 = abs(mesh.volume / 1000)  # mm³ → cm³
 
     material_prices = {
-        'PLA': 350,
-        'ABS': 450,
-        'TPU': 600,
-        'PETG': 450,
+        'PLA': 300,
+        'ABS': 400,
+        'TPU': 400,
+        'PETG': 350,
         '강화레진': 1000,
         '투명레진': 1300
     }
 
     price_per_cm3 = material_prices.get(material, 200)
     raw_estimate = volume_cm3 * price_per_cm3
-    estimate = int(round(raw_estimate, -3))  # ✅ 1000원 단위로 반올림
+    estimate = int(round(raw_estimate, -3))  # 1000원 단위로 반올림
 
     return jsonify({
         "estimate": estimate,
@@ -51,12 +51,26 @@ def submit_order():
     phone = request.form['phone']
     address = request.form['address']
     estimate = request.form['estimate']
+    source = request.form['source']
+    custom_source = request.form.get('custom_source', '')
+
+    final_source = custom_source if source == "기타" and custom_source else source
 
     with open('orders.csv', mode='a', newline='', encoding='utf-8-sig') as f:
         writer = csv.writer(f)
-        writer.writerow([name, phone, address, estimate])
+        writer.writerow([name, phone, address, estimate, final_source])
 
-    return f"<h2>주문이 완료되었습니다! 감사합니다 :)</h2><p>{name} / {phone} / {address} / {estimate}원</p>"
+    return f"""
+    <h2>주문이 완료되었습니다! 감사합니다 :)</h2>
+    <p>
+      이름: {name}<br>
+      연락처: {phone}<br>
+      주소: {address}<br>
+      견적: {estimate}원<br>
+      주문경로: {final_source}
+    </p>
+    <a href="/">메인으로 돌아가기</a>
+    """
 
 @app.route('/orders')
 def view_orders():
@@ -64,4 +78,3 @@ def view_orders():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
