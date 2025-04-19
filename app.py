@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 import trimesh
 import os
 
@@ -6,10 +6,10 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ✅ 홈페이지 접속 시 index.html 보여주기!
+# ✅ 메인화면(index.html)을 보여주는 부분!
 @app.route('/')
 def home():
-    return send_from_directory('.', 'index.html')
+    return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -39,6 +39,10 @@ def upload_file():
         "estimate": estimate,
         "volume": round(volume_cm3, 1)
     })
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
