@@ -1,14 +1,31 @@
 from flask import Flask, request, jsonify, render_template
+from werkzeug.utils import secure_filename
 import os
+import datetime
 import trimesh
 
-app = Flask(__name__)
+import gspread
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
-# 업로드 폴더 설정
+app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 재질별 단가 (원/cm³)
+# Google API 설정
+SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/spreadsheets"
+]
+SERVICE_ACCOUNT_FILE = "service_account.json"
+SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
+DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
+
+creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+drive_service = build('drive', 'v3', credentials=creds)
+sheet_service = build('sheets', 'v4', credentials=creds)
+
 material_prices = {
     'PLA': 400,
     'ABS': 500,
@@ -18,12 +35,10 @@ material_prices = {
     '투명레진': 2500
 }
 
-# 메인 페이지
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# 견적 계산 처리
 @app.route('/upload', methods=['POST'])
 def upload_files():
     files = request.files.getlist('file')
@@ -45,7 +60,7 @@ def upload_files():
 
         try:
             mesh = trimesh.load_mesh(filepath)
-            volume_cm3 = abs(mesh.volume / 1000)  # mm³ -> cm³
+            volume_cm3 = abs(mesh.volume / 1000)
         except:
             volume_cm3 = 0
 
@@ -64,14 +79,70 @@ def upload_files():
         "total": total
     })
 
-# 주문 입력 페이지 연결
 @app.route('/order')
 def order():
     estimate = request.args.get('estimate', '0')
     return render_template('order.html', estimate=estimate)
 
-# 서버 실행 (로컬용)
+# Google Drive 업로드 + 링크 생성
+
+def upload_file_to_drive(file_path, filename):
+    file_metadata = {
+        'name': filename,
+        'parents': [DRIVE_FOLDER_ID]
+    }
+    media = MediaFileUpload(file_path, mimetype='application/octet-stream')
+    uploaded_file = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    ).execute()
+
+    drive_service.permissions().create(
+        fileId=uploaded_file['id'],
+        body={'type': 'anyone', 'role': 'reader'},
+    ).execute()
+
+    return f"https://drive.google.com/file/d/{uploaded_file['id']}/view?usp=sharing"
+
+# Google Sheet 기록
+
+def record_order_to_sheet(name, phone, address, estimate, channel, file_links):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    for fname, link in file_links:
+        row = [now, name, phone, address, estimate, channel, fname, link]
+        sheet_service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range="A1",
+            valueInputOption="RAW",
+            body={"values": [row]}
+        ).execute()
+
+@app.route('/submit-order', methods=['POST'])
+def submit_order():
+    name = request.form['name']
+    phone = request.form['phone']
+    address = request.form['address']
+    estimate = request.form['estimate']
+    channel = request.form['channel']
+    channel_detail = request.form.get('channel_detail', '')
+
+    full_channel = channel if channel != '기타' else f"기타: {channel_detail}"
+
+    uploaded_files = request.files.getlist("file")
+    file_links = []
+
+    for file in uploaded_files:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        link = upload_file_to_drive(file_path, filename)
+        file_links.append((filename, link))
+
+    record_order_to_sheet(name, phone, address, estimate, full_channel, file_links)
+
+    return "주문이 정상적으로 접수되었습니다. 감사합니다!"
+
 if __name__ == '__main__':
     app.run(debug=True)
-
 
