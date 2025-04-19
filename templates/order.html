@@ -6,7 +6,7 @@
   <style>
     body { font-family: Arial, sans-serif; padding: 30px; background-color: #f0f8ff; }
     h1 { color: #2196f3; }
-    label, input, button {
+    label, input, select, button {
       display: block; margin-bottom: 15px;
       font-size: 16px; max-width: 400px; width: 100%;
     }
@@ -19,6 +19,9 @@
     }
     button:hover {
       background-color: #1976d2;
+    }
+    #custom-source-box {
+      display: none;
     }
   </style>
 </head>
@@ -40,6 +43,20 @@
     <label>주소:</label>
     <input type="text" name="address" required />
 
+    <label>주문 경로:</label>
+    <select name="source" id="source-select" required>
+      <option value="">선택하세요</option>
+      <option value="크몽">크몽</option>
+      <option value="숨고">숨고</option>
+      <option value="홈페이지">홈페이지</option>
+      <option value="기타">기타</option>
+    </select>
+
+    <div id="custom-source-box">
+      <label>기타 경로를 입력해주세요:</label>
+      <input type="text" name="custom_source" />
+    </div>
+
     <button type="submit">최종 주문하기</button>
   </form>
 
@@ -49,6 +66,18 @@
 
     document.getElementById("estimate-input").value = estimate;
     document.getElementById("estimate-display").innerText = estimate + "원";
+
+    const sourceSelect = document.getElementById("source-select");
+    const customBox = document.getElementById("custom-source-box");
+
+    sourceSelect.addEventListener('change', function () {
+      if (this.value === "기타") {
+        customBox.style.display = 'block';
+      } else {
+        customBox.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>
+
