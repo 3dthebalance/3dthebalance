@@ -6,10 +6,12 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# ✅ 홈페이지 접속 시 index.html 보여주기
 @app.route('/')
 def home():
     return send_from_directory('.', 'index.html')
 
+# ✅ 견적 계산 로직
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
@@ -20,7 +22,7 @@ def upload_file():
     file.save(filepath)
 
     mesh = trimesh.load_mesh(filepath)
-    volume_cm3 = abs(mesh.volume / 1000)
+    volume_cm3 = abs(mesh.volume / 1000)  # mm³ → cm³ (음수 방지)
 
     material_prices = {
         'PLA': 300,
@@ -39,5 +41,6 @@ def upload_file():
         "volume": round(volume_cm3, 1)
     })
 
+# ✅ 서버 실행 (로컬 테스트용, Render에서는 무시됨)
 if __name__ == '__main__':
     app.run(debug=True)
