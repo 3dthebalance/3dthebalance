@@ -2,73 +2,92 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D 프린트 견적 계산기</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      margin: 0;
       background-color: #fff8e1;
     }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
     h1 {
+      font-size: 1.8rem;
       color: #ff9800;
+      margin-bottom: 20px;
+      text-align: center;
     }
     label {
       font-weight: bold;
       display: block;
-      margin-top: 15px;
+      margin-top: 20px;
+      font-size: 1rem;
     }
     select, input[type="file"], button {
       margin-top: 5px;
-      padding: 8px;
-      font-size: 14px;
+      padding: 12px;
+      font-size: 1rem;
       display: block;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       width: 100%;
-      max-width: 400px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
     button {
       background-color: #ffb300;
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
     button:hover {
       background-color: #ffa000;
     }
     #result {
-      margin-top: 20px;
-      font-size: 18px;
+      margin-top: 30px;
+      font-size: 1.1rem;
       font-weight: bold;
+      text-align: center;
+    }
+    #order-btn {
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>3D 프린트 견적 계산기</h1>
+  <div class="container">
+    <h1>3D 프린트 견적 계산기</h1>
 
-  <form id="upload-form" enctype="multipart/form-data">
-    <label>프린터 종류:</label>
-    <select id="printer-type">
-      <option value="FDM">FDM</option>
-      <option value="SLA">SLA</option>
-    </select>
+    <form id="upload-form" enctype="multipart/form-data">
+      <label>프린터 종류</label>
+      <select id="printer-type">
+        <option value="FDM">FDM</option>
+        <option value="SLA">SLA</option>
+      </select>
 
-    <label>재질 선택:</label>
-    <select id="material">
-      <option value="PLA">PLA</option>
-      <option value="ABS">ABS</option>
-      <option value="TPU">TPU</option>
-      <option value="PETG">PETG</option>
-    </select>
+      <label>재질 선택</label>
+      <select id="material">
+        <option value="PLA">PLA</option>
+        <option value="ABS">ABS</option>
+        <option value="TPU">TPU</option>
+        <option value="PETG">PETG</option>
+      </select>
 
-    <label>3D 파일 선택 (STL, OBJ):</label>
-    <input type="file" id="stl-file" accept=".stl,.obj" required />
+      <label>3D 파일 선택 (STL, OBJ)</label>
+      <input type="file" id="stl-file" accept=".stl,.obj" required />
 
-    <button type="submit">견적 계산하기</button>
-  </form>
+      <button type="submit">견적 계산하기</button>
+    </form>
 
-  <div id="result"></div>
-  <div id="order-btn" style="display: none;">
-    <a id="order-link"><button>주문하기</button></a>
+    <div id="result"></div>
+    <div id="order-btn" style="display: none;">
+      <a id="order-link"><button>주문하기</button></a>
+    </div>
   </div>
 
   <script>
@@ -129,6 +148,9 @@
       orderBtn.style.display = 'block';
     });
   </script>
+</body>
+</html>
+
 </body>
 </html>
 
