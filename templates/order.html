@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>주문하기</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background-color: #f0f8ff; }
+    h1 { color: #2196f3; }
+    label, input, button {
+      display: block; margin-bottom: 15px;
+      font-size: 16px; max-width: 400px; width: 100%;
+    }
+    button {
+      padding: 10px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <h1>최종 주문서</h1>
+
+  <form method="POST" action="/order">
+    <input type="hidden" name="estimate" id="estimate-input" />
+
+    <label>견적 금액:</label>
+    <div id="estimate-display"></div>
+
+    <label>이름:</label>
+    <input type="text" name="name" required />
+
+    <label>연락처:</label>
+    <input type="text" name="phone" required />
+
+    <label>주소:</label>
+    <input type="text" name="address" required />
+
+    <button type="submit">최종 주문하기</button>
+  </form>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const estimate = params.get("estimate");
+
+    document.getElementById("estimate-input").value = estimate;
+    document.getElementById("estimate-display").innerText = estimate + "원";
+  </script>
+</body>
+</html>
