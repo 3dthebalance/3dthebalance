@@ -4,7 +4,6 @@ import os
 import datetime
 import json
 import trimesh
-import math
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -15,13 +14,11 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Google API 설정
 SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets"
 ]
 
-# 환경변수에서 service_account 정보 불러오기
 SERVICE_ACCOUNT_INFO = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
 
@@ -64,25 +61,17 @@ def upload_files():
         file.save(filepath)
 
         try:
-            mesh = trimesh.load_mesh(filepath)
-            if mesh.is_empty:
-                raise ValueError("빈 mesh입니다.")
-
-            if hasattr(mesh, 'geometry'):
-                total_volume = sum([g.volume for g in mesh.geometry.values()])
-            else:
-                total_volume = mesh.volume
-
-            volume_cm3 = abs(total_volume / 1000.0)
+            mesh = trimesh.load_mesh(filepath, force='mesh')
+            if mesh.is_empty or mesh.volume is None:
+                raise ValueError("Invalid mesh")
+            volume_cm3 = abs(mesh.volume / 1000)
         except Exception as e:
-            print(f"[오류] {filename} - {str(e)}")
+            print(f"[ERROR] {filename} 부피 계산 실패: {e}")
             volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
-        estimate = math.ceil(volume_cm3 * price_per_cm3 / 1000) * 1000
+        estimate = int(round(volume_cm3 * price_per_cm3, -3))
         total += estimate
-
-        print(f"{filename} → 부피: {volume_cm3}cm³, 단가: {price_per_cm3}, 견적: {estimate}원")
 
         estimates.append({
             "filename": filename,
