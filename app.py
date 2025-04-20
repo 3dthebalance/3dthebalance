@@ -30,7 +30,7 @@ SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
 DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
 material_prices = {
-    'PLA': 203,
+    'PLA': 150,
     'ABS': 200,
     'TPU': 210,
     'PETG': 220,
