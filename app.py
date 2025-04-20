@@ -65,13 +65,24 @@ def upload_files():
 
         try:
             mesh = trimesh.load_mesh(filepath)
-            volume_cm3 = abs(mesh.volume / 1000.0)  # mm³ → cm³
+            if mesh.is_empty:
+                raise ValueError("빈 mesh입니다.")
+
+            if hasattr(mesh, 'geometry'):
+                total_volume = sum([g.volume for g in mesh.geometry.values()])
+            else:
+                total_volume = mesh.volume
+
+            volume_cm3 = abs(total_volume / 1000.0)
         except Exception as e:
+            print(f"[오류] {filename} - {str(e)}")
             volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
-        estimate = math.ceil(volume_cm3 * price_per_cm3 / 1000) * 1000  # 천 원 단위 반올림
+        estimate = math.ceil(volume_cm3 * price_per_cm3 / 1000) * 1000
         total += estimate
+
+        print(f"{filename} → 부피: {volume_cm3}cm³, 단가: {price_per_cm3}, 견적: {estimate}원")
 
         estimates.append({
             "filename": filename,
