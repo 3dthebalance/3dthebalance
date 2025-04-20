@@ -30,7 +30,7 @@ sheet_service = build('sheets', 'v4', credentials=creds)
 SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
 DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
-# 실제 설정된 1kg 단가에 따라 수정
+# 대표님 요청 기준 단가 설정 (원/cm^3)
 material_prices = {
     'PLA': 248,
     'ABS': 372,
@@ -51,14 +51,19 @@ def upload_files():
     material = request.form['material']
 
     allowed_ext = ['.stl', '.obj']
+    seen_filenames = set()
     estimates = []
     total = 0
 
     for file in files:
-        filename = secure_filename(file.filename.lower())
+        filename = file.filename.lower()
         ext = os.path.splitext(filename)[1]
         if ext not in allowed_ext:
             continue
+
+        if filename in seen_filenames:
+            continue
+        seen_filenames.add(filename)
 
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
@@ -66,7 +71,7 @@ def upload_files():
         try:
             mesh = trimesh.load_mesh(filepath)
             volume_cm3 = abs(mesh.volume / 1000)
-        except Exception as e:
+        except:
             volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
