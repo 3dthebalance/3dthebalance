@@ -20,6 +20,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets"
 ]
 
+# 환경변수에서 service_account 정보 불러오기
 SERVICE_ACCOUNT_INFO = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
 
@@ -29,6 +30,7 @@ sheet_service = build('sheets', 'v4', credentials=creds)
 SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
 DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
+# 대표님 요청 기준 단가 설정 (원/cm^3)
 material_prices = {
     'PLA': 248,
     'ABS': 372,
@@ -56,9 +58,11 @@ def upload_files():
     for file in files:
         filename = file.filename.lower()
         ext = os.path.splitext(filename)[1]
-        if ext not in allowed_ext or filename in seen_filenames:
+        if ext not in allowed_ext:
             continue
 
+        if filename in seen_filenames:
+            continue
         seen_filenames.add(filename)
 
         filepath = os.path.join(UPLOAD_FOLDER, filename)
@@ -68,12 +72,12 @@ def upload_files():
             mesh = trimesh.load_mesh(filepath)
             volume_cm3 = abs(mesh.volume / 1000)
             bounds = mesh.bounds
-            size_x = round(bounds[1][0] - bounds[0][0], 1)
-            size_y = round(bounds[1][1] - bounds[0][1], 1)
-            size_z = round(bounds[1][2] - bounds[0][2], 1)
+            x_len = round(abs(bounds[1][0] - bounds[0][0]), 1)
+            y_len = round(abs(bounds[1][1] - bounds[0][1]), 1)
+            z_len = round(abs(bounds[1][2] - bounds[0][2]), 1)
         except:
             volume_cm3 = 0
-            size_x = size_y = size_z = 0
+            x_len = y_len = z_len = 0
 
         price_per_cm3 = material_prices.get(material, 200)
         estimate = int(round(volume_cm3 * price_per_cm3, -3))
@@ -82,9 +86,9 @@ def upload_files():
         estimates.append({
             "filename": filename,
             "volume": round(volume_cm3, 1),
-            "x": size_x,
-            "y": size_y,
-            "z": size_z,
+            "x": x_len,
+            "y": y_len,
+            "z": z_len,
             "estimate": estimate
         })
 
@@ -136,6 +140,7 @@ def submit_order():
     estimate = request.form['estimate']
     channel = request.form['channel']
     channel_detail = request.form.get('channel_detail', '')
+
     full_channel = channel if channel != '기타' else f"기타: {channel_detail}"
 
     uploaded_files = request.files.getlist("file")
