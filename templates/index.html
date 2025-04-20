@@ -82,12 +82,7 @@
 
         <label for="material">재질 선택:</label>
         <select name="material" id="material">
-            <option value="PLA">PLA</option>
-            <option value="ABS">ABS</option>
-            <option value="TPU">TPU</option>
-            <option value="PETG">PETG</option>
-            <option value="강화레진">강화레진</option>
-            <option value="투명레진">투명레진</option>
+            <!-- 재질 옵션은 자바스크립트에서 동적으로 삽입 -->
         </select>
 
         <label for="file">3D 파일 선택 (STL, OBJ):</label>
@@ -107,6 +102,31 @@
 </div>
 
 <script>
+    const materialOptions = {
+        FDM: ['PLA', 'ABS', 'TPU', 'PETG'],
+        SLA: ['강화레진', '투명레진']
+    };
+
+    function updateMaterialOptions(printerType) {
+        const materialSelect = document.getElementById('material');
+        materialSelect.innerHTML = '';
+        materialOptions[printerType].forEach(material => {
+            const option = document.createElement('option');
+            option.value = material;
+            option.textContent = material;
+            materialSelect.appendChild(option);
+        });
+    }
+
+    document.getElementById('printer').addEventListener('change', function () {
+        updateMaterialOptions(this.value);
+    });
+
+    // 초기화 시 기본 옵션 설정
+    document.addEventListener('DOMContentLoaded', function () {
+        updateMaterialOptions(document.getElementById('printer').value);
+    });
+
     document.getElementById('upload-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -156,4 +176,5 @@
 </script>
 </body>
 </html>
+
 
