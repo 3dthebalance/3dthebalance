@@ -32,12 +32,12 @@ DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
 # 대표님 요청 기준 단가 설정 (원/cm^3)
 material_prices = {
-    'PLA': 200,
-    'ABS': 230,
-    'TPU': 230,
-    'PETG': 230,
-    '강화레진': 330,
-    '투명레진': 340
+    'PLA': 170,
+    'ABS': 200,
+    'TPU': 210,
+    'PETG': 200,
+    '강화레진': 320,
+    '투명레진': 330
 }
 
 @app.route('/')
