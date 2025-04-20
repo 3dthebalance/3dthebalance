@@ -32,12 +32,12 @@ DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
 # 1g당 단가 기준 material 가격 설정 (원/cm³)
 material_prices = {
-    'PLA': 400,
-    'ABS': 500,
-    'TPU': 700,
-    'PETG': 500,
-    '강화레진': 2000,
-    '투명레진': 2500
+    'PLA': 248,
+    'ABS': 372,
+    'TPU': 372,
+    'PETG': 372,
+    '강화레진': 450,
+    '투명레진': 500
 }
 
 @app.route('/')
