@@ -30,7 +30,7 @@ sheet_service = build('sheets', 'v4', credentials=creds)
 SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
 DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
-# 1g당 단가 기준 material 가격 설정 (원/cm³)
+# 실제 설정된 1kg 단가에 따라 수정
 material_prices = {
     'PLA': 248,
     'ABS': 372,
@@ -55,10 +55,9 @@ def upload_files():
     total = 0
 
     for file in files:
-        filename = file.filename.lower()
+        filename = secure_filename(file.filename.lower())
         ext = os.path.splitext(filename)[1]
         if ext not in allowed_ext:
-            print(f"❌ 지원되지 않는 파일 확장자: {filename}")
             continue
 
         filepath = os.path.join(UPLOAD_FOLDER, filename)
@@ -67,13 +66,8 @@ def upload_files():
         try:
             mesh = trimesh.load_mesh(filepath)
             volume_cm3 = abs(mesh.volume / 1000)
-            print(f"✅ {filename} → 부피 계산: {volume_cm3:.2f} cm³")
-            if volume_cm3 == 0:
-                print(f"⚠️ {filename} → 부피가 0으로 나왔습니다. 테스트용 임의값 적용")
-                volume_cm3 = 30.0
         except Exception as e:
-            print(f"❌ {filename} 부피 계산 실패: {e}")
-            volume_cm3 = 30.0  # 실패 시 임의값
+            volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
         estimate = int(round(volume_cm3 * price_per_cm3, -3))
@@ -152,4 +146,3 @@ def submit_order():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
