@@ -4,6 +4,7 @@ import os
 import datetime
 import json
 import trimesh
+import math
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -64,12 +65,12 @@ def upload_files():
 
         try:
             mesh = trimesh.load_mesh(filepath)
-            volume_cm3 = abs(mesh.volume / 1000)
-        except:
+            volume_cm3 = abs(mesh.volume / 1000.0)  # mm³ → cm³
+        except Exception as e:
             volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
-        estimate = int(round(volume_cm3 * price_per_cm3, -3))
+        estimate = math.ceil(volume_cm3 * price_per_cm3 / 1000) * 1000  # 천 원 단위 반올림
         total += estimate
 
         estimates.append({
@@ -145,3 +146,4 @@ def submit_order():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
