@@ -14,11 +14,13 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Google API 설정
 SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets"
 ]
 
+# 환경변수에서 service_account 정보 불러오기
 SERVICE_ACCOUNT_INFO = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
 
@@ -52,7 +54,7 @@ def upload_files():
     total = 0
 
     for file in files:
-        filename = file.filename.lower()
+        filename = secure_filename(file.filename.lower())
         ext = os.path.splitext(filename)[1]
         if ext not in allowed_ext:
             continue
@@ -61,16 +63,14 @@ def upload_files():
         file.save(filepath)
 
         try:
-            mesh = trimesh.load_mesh(filepath, force='mesh')
-            if mesh.is_empty or mesh.volume is None:
-                raise ValueError("Invalid mesh")
+            mesh = trimesh.load_mesh(filepath)
             volume_cm3 = abs(mesh.volume / 1000)
         except Exception as e:
-            print(f"[ERROR] {filename} 부피 계산 실패: {e}")
+            print(f"[Error] 파일 처리 실패: {filename} - {e}")
             volume_cm3 = 0
 
         price_per_cm3 = material_prices.get(material, 200)
-        estimate = int(round(volume_cm3 * price_per_cm3, -3))
+        estimate = int(round(volume_cm3 * price_per_cm3))  # 소수점 반올림으로 변경
         total += estimate
 
         estimates.append({
@@ -146,4 +146,5 @@ def submit_order():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
