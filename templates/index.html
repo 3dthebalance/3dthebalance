@@ -8,17 +8,16 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      margin: 0;
       background-color: #fff8e1;
+      margin: 0;
     }
     .container {
-      max-width: 600px;
+      max-width: 500px;
       margin: 0 auto;
     }
     h1 {
-      text-align: center;
       color: #ff9800;
-      margin-top: 10px;
+      text-align: center;
     }
     label {
       font-weight: bold;
@@ -28,9 +27,7 @@
     select, input[type="file"], button {
       margin-top: 5px;
       padding: 10px;
-      font-size: 1rem;
-      display: block;
-      margin-bottom: 15px;
+      font-size: 16px;
       width: 100%;
       box-sizing: border-box;
     }
@@ -39,125 +36,98 @@
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
     button:hover {
       background-color: #ffa000;
     }
+    #result, #summary {
+      margin-top: 20px;
+      font-size: 16px;
+    }
     table {
       width: 100%;
+      margin-top: 10px;
       border-collapse: collapse;
-      margin-top: 20px;
     }
     th, td {
-      padding: 10px;
       border: 1px solid #ccc;
+      padding: 8px;
       text-align: center;
     }
-    #total {
+    .loading {
+      margin-top: 15px;
+      text-align: center;
       font-weight: bold;
-      font-size: 1.2rem;
-      text-align: center;
-      margin-top: 20px;
+      color: #d17d00;
     }
-    .header-image {
-      max-width: 100%;
-      border-radius: 12px;
+    .image-banner {
+      width: 100%;
       margin-bottom: 20px;
-      display: block;
+      border-radius: 10px;
     }
-    #order-btn {
-      text-align: center;
-      margin-top: 30px;
-      display: none;
-    }
-    #order-btn button {
-      background-color: #4caf50;
-      font-size: 1rem;
-      padding: 12px 20px;
-      border-radius: 6px;
-    }
-    #order-btn button:hover {
-      background-color: #45a049;
-    }
-    #loading {
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
-      display: none;
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- 상단 이미지 -->
-    <img src="/static/printing.png" alt="3D 프린팅 사진" class="header-image" />
-
+    <img src="/static/printing.png" alt="3D Printing Banner" class="image-banner" />
     <h1>3D 프린트 견적 계산기</h1>
 
     <form id="upload-form" enctype="multipart/form-data">
-      <label>프린터 종류:</label>
+      <label for="printer-type">프린터 종류:</label>
       <select id="printer-type">
         <option value="FDM">FDM</option>
         <option value="SLA">SLA</option>
       </select>
 
-      <label>재질 선택:</label>
+      <label for="material">재질 선택:</label>
       <select id="material">
         <option value="PLA">PLA</option>
         <option value="ABS">ABS</option>
         <option value="TPU">TPU</option>
         <option value="PETG">PETG</option>
-        <option value="강화레진">강화레진</option>
-        <option value="투명레진">투명레진</option>
       </select>
 
-      <label>3D 파일 선택 (STL, OBJ):</label>
-      <input type="file" id="stl-file" accept=".stl,.obj" multiple required />
+      <label for="stl-file">3D 파일 선택 (STL, OBJ):</label>
+      <input type="file" id="stl-file" name="file" multiple accept=".stl,.obj,application/octet-stream" />
 
       <button type="submit">견적 계산하기</button>
     </form>
 
-    <div id="loading">⏳ 견적 계산 중입니다...</div>
+    <div id="loading" class="loading" style="display: none;">⏳ 견적 계산 중입니다...</div>
+    <div id="result"></div>
+    <div id="summary"></div>
 
-    <table id="result-table" style="display: none;">
-      <thead>
-        <tr>
-          <th>파일명</th>
-          <th>부피 (cm³)</th>
-          <th>예상 견적 (원)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div id="total"></div>
-
-    <!-- 주문하기 버튼 -->
-    <div id="order-btn">
-      <a id="order-link"><button type="button">주문하기</button></a>
-    </div>
+    <form id="order-form" action="/order" method="get" style="display: none;">
+      <input type="hidden" id="estimate-input" name="estimate" />
+      <button type="submit" style="margin-top: 20px;">🧾 주문하기</button>
+    </form>
   </div>
 
   <script>
-    const printerSelect = document.getElementById("printer-type");
-    const materialSelect = document.getElementById("material");
-    const resultTable = document.getElementById("result-table");
-    const tbody = resultTable.querySelector("tbody");
-    const totalDiv = document.getElementById("total");
-    const orderBtn = document.getElementById("order-btn");
-    const orderLink = document.getElementById("order-link");
-    const loading = document.getElementById("loading");
+    const printerSelect = document.getElementById('printer-type');
+    const materialSelect = document.getElementById('material');
+    const resultDiv = document.getElementById('result');
+    const summaryDiv = document.getElementById('summary');
+    const estimateInput = document.getElementById('estimate-input');
+    const orderForm = document.getElementById('order-form');
+    const loadingDiv = document.getElementById('loading');
 
     const materials = {
       FDM: ["PLA", "ABS", "TPU", "PETG"],
       SLA: ["강화레진", "투명레진"]
     };
 
-    printerSelect.addEventListener("change", () => {
+    printerSelect.addEventListener('change', () => {
       const selected = printerSelect.value;
-      materialSelect.innerHTML = "";
+      materialSelect.innerHTML = '';
       materials[selected].forEach(material => {
-        const option = document.createElement("option");
+        const option = document.createElement('option');
         option.value = material;
         option.textContent = material;
         materialSelect.appendChild(option);
@@ -166,41 +136,46 @@
 
     document.getElementById("upload-form").addEventListener("submit", async function(e) {
       e.preventDefault();
-
-      // 🔥 로딩 표시
-      loading.style.display = "block";
-
       const files = document.getElementById("stl-file").files;
       const printer = printerSelect.value;
       const material = materialSelect.value;
 
+      if (files.length === 0) {
+        alert("파일을 선택해주세요.");
+        return;
+      }
+
       const formData = new FormData();
-      for (let file of files) {
-        formData.append("file", file);
+      for (let i = 0; i < files.length; i++) {
+        formData.append("file", files[i]);
       }
       formData.append("printer", printer);
       formData.append("material", material);
+
+      resultDiv.innerHTML = '';
+      summaryDiv.innerHTML = '';
+      orderForm.style.display = 'none';
+      loadingDiv.style.display = 'block';
 
       const response = await fetch("/upload", {
         method: "POST",
         body: formData
       });
 
+      loadingDiv.style.display = 'none';
+
       const result = await response.json();
 
-      // 🔥 로딩 숨기기
-      loading.style.display = "none";
-
-      tbody.innerHTML = "";
-      result.estimates.forEach(est => {
-        const row = `<tr><td>${est.filename}</td><td>${est.volume}</td><td>${est.estimate.toLocaleString()}</td></tr>`;
-        tbody.innerHTML += row;
+      let tableHTML = '<table><tr><th>파일명</th><th>부피 (cm³)</th><th>예상 견적 (원)</th></tr>';
+      result.details.forEach(item => {
+        tableHTML += `<tr><td>${item.filename}</td><td>${item.volume}</td><td>${item.estimate.toLocaleString()}</td></tr>`;
       });
-      resultTable.style.display = "table";
-      totalDiv.innerText = `총 합계: ${result.total.toLocaleString()}원`;
+      tableHTML += '</table>';
+      resultDiv.innerHTML = tableHTML;
 
-      orderLink.href = `/order?estimate=${result.total}`;
-      orderBtn.style.display = "block";
+      summaryDiv.innerHTML = `<strong>총 합계: ${result.total.toLocaleString()}원</strong>`;
+      estimateInput.value = result.total;
+      orderForm.style.display = 'block';
     });
   </script>
 </body>
