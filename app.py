@@ -30,12 +30,12 @@ SPREADSHEET_ID = "1KmlihVAwcQagX48iG5y-GDnCoMaMpHovLMeiZJqFGPk"
 DRIVE_FOLDER_ID = "1djicleZgTLhtMViaFbARlc8r_bQ6ULIe"
 
 material_prices = {
-    'PLA': 150,
+    'PLA': 170,
     'ABS': 200,
     'TPU': 210,
     'PETG': 220,
-    '강화레진': 380,
-    '투명레진': 420
+    '강화레진': 300,
+    '투명레진': 320
 }
 
 @app.route('/')
